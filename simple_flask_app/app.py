@@ -66,7 +66,7 @@ def index():
         file_path = 'templates/' + excel_name + '.xlsx'
         data, basis, bess, service, revenue_change = data_import(file_path)
 
-        print(data['load'])
+        # print(data['load'])
 
         bess['cap_energy'] = float(energy_capacity)
         bess['cap_power'] = float(power_capacity)
