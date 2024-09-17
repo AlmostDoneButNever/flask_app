@@ -186,14 +186,12 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
     </head>
     <body>
         <div class="menu">
-            <a href="#bessOptimizationResult" onclick="showSection('bessOptimizationResult')">Optimization Result for BESS Operation</a>
-            <a href="#economicAnalysis" onclick="showSection('economicAnalysis')">Economic Analysis</a>
+            <a href="#bessOptimizationResult" onclick="showSection('bessOptimizationResult'); return false;">Optimization Result for BESS Operation</a>
+            <a href="#economicAnalysis" onclick="showSection('economicAnalysis'); return false;">Economic Analysis</a>
         </div>
 
-        <div id="bessOptimizationResult" class="content active">
-            <h1>Optimization Result for BESS Operation</h1>
-            <p>Optimization results for Battery Energy Storage System (BESS) operation will be displayed here, including price data, charging and discharging schedules, and state of charge over time.</p>
-            <div class="container">
+        <div id="bessOptimizationResult" class="content">
+            <div class="container" style="display: none;">
                 <h4 class="label">Select a Start Date</h4>
                 <input type="date" id="startDatePicker" class="datepicker">
                 <button class="duration-button" data-duration="1day">1 Day</button>
@@ -205,18 +203,16 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
             <h2 id="endDateText" style="display: none;">End Date: </h2>
             
             <div class="chart-container" id="prices_chart"></div>
-            <div class="chart-container" id="revenue_breakdown_chart"></div>
+            <div class="chart-container" id="revenue_breakdown_chart" style="display: none;"></div>
             <div class="chart-container" id="soc_chart"></div>
-            <div class="chart-container" id="charge_discharge_chart"></div>
+            <div class="chart-container" id="charge_discharge_chart" style="display: none;"></div>
             <div class="chart-container" id="operation_schedule_chart"></div>
             <div class="chart-container" id="btm_services_chart" style="display: none;"></div>
         </div>
 
-        <div id="economicAnalysis" class="content">
-            <h1>Economic Analysis</h1>
-
-            <h2>Capacity Settings</h2>
-            <div class="input-container">
+        <div id="economicAnalysis" class="content active">
+            <h2 style="display: none;">Capacity Settings</h2>
+            <div class="input-container" style="display: none;">
                 <div class="input-group">
                     <label>Power capacity (MW):</label>
                     <span id="cap_power">{bess['cap_power']}</span>
@@ -227,8 +223,8 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                 </div>
             </div>
 
-            <h2>Costing</h2>
-            <div class="input-container">
+            <h2 style="display: none;">Costing</h2>
+            <div class="input-container" style="display: none;">
                 <div class="input-group">
                     <label for="fixed_capex">Fixed capital cost ($):</label>
                     <input type="number" id="fixed_capex" name="fixed_capex" value="{bess['fixed_capex']:.2f}" min="0" oninput="updateInitialCost()">
@@ -677,6 +673,7 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                     }},
                 ];
 
+                /*
                 if ({service['reg_symmetric']} != 1) {{
                     plotData.push(
                     {{
@@ -753,8 +750,19 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                         line: {{color: '#7f7f7f'}} 
                     }}, 
                 )
-
+                */
                 
+                plotData.push(
+                    {{
+                        x: priceData.map(item => item.time),
+                        y: priceData.map(item => item.ec_energy_price),
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Consumer-side Energy',
+                        line: {{color: '#7f7f7f'}} 
+                    }}, 
+                )
+
                 Plotly.newPlot('prices_chart', plotData, {{
                     title: 'Energy Prices Over Time',
                     xaxis: {{title: 'Time'}},
@@ -781,6 +789,8 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                         name: 'Arbitrage Charge',
                         line: {{color: '#17becf'}}
                     }},
+
+                    /*
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => item.reg_up),
@@ -829,6 +839,7 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                         name: 'Interruptible Load',
                         line: {{color: '#e377c2'}}
                     }},
+                    */
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => item.storage_to_load),
@@ -877,18 +888,20 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => item.arb_discharge),
-                        name: 'Arbitrage Discharge',
+                        name: 'Storage discharge (grid-side)',
                         type: 'bar',
                         marker: {{color: '#1f77b4'}}
                     }},
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => -item.arb_charge),
-                        name: 'Arbitrage Charge',
+                        name: 'Storage charge (grid-side)',
                         type: 'bar',
                         marker: {{color: '#17becf'}},
                         offsetgroup: 'negative'
                     }},
+
+                    /*
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => item.reg_up),
@@ -932,23 +945,25 @@ def generate_html(filename, bess, service, price_data, result_data, revenue_data
                         type: 'bar',
                         marker: {{color: '#e377c2'}}
                     }},
+                    */
+
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => item.storage_to_load),
-                        name: 'Storage to Load',
+                        name: 'Storage discharge (consumer-side)',
                         type: 'bar',
                         marker: {{color: '#7f7f7f'}}
                     }},
                     {{
                         x: resultData.map(item => item.time),
                         y: resultData.map(item => -item.grid_to_storage),
-                        name: 'Grid to Storage',
+                        name: 'Storage charge (consumer-side)',
                         type: 'bar',
                         marker: {{color: '#bcbd22'}},
                         offsetgroup: 'negative'
                     }}
                 ], {{
-                    title: 'Operation Schedule - Stacked Bar',
+                    title: 'Operation Schedule',
                     barmode: 'relative',
                     xaxis: {{title: 'Time'}},
                     yaxis: {{title: 'Power (MW)'}},

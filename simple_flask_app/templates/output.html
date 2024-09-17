@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Output</title>
+    <title>BESS Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -169,23 +169,29 @@
             outline: none;
         }
 
-        .checkbox-title {
-            font-weight: bold;
-            margin: 20px 0 10px;
-            color: #333;
-        }
-
-        .checkbox-field {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
         .checkbox-label {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 14px;
+        }
+
+        .checkbox-title {
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px; /* Ensures consistent top margin for all titles */
+            margin-bottom: 5px; /* Reduces space between title and fields */
+        }
+
+        .checkbox-field {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Maintains consistent gap between checkbox options */
+        }
+
+        #consumer-inputs .checkbox-title, 
+        #consumer-inputs .checkbox-field {
+            margin-top: 15px; /* Ensures consistency when these elements become visible */
         }
 
         .submit-button {
@@ -215,6 +221,10 @@
             border-radius: 10px;
             border: 1px solid #ddd;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -227,6 +237,7 @@
             </div>
             <form method="POST" action="{{ url_for('index') }}" onsubmit="showProcessingMessage()">
                 <div class="form-column">
+                    <div class="checkbox-title">Capacity Settings</div>
                     <div class="input-field">
                         <label for="power_capacity">Power Capacity (MW):</label>
                         <input type="range" id="power_capacity" name="power_capacity" min="0" max="10" value="{{ power_capacity or 1 }}" oninput="syncInput('power_capacity')">
@@ -237,9 +248,10 @@
                         <input type="range" id="energy_capacity" name="energy_capacity" min="0" max="10" value="{{ energy_capacity or 4 }}" oninput="syncInput('energy_capacity')">
                         <input type="number" id="energy_capacity_number" min="0" max="10" value="{{ energy_capacity or 4 }}" oninput="syncSlider('energy_capacity')">
                     </div>
+                    <div class="checkbox-title">Cost Parameters</div>
                     <div class="input-field">
                         <label for="fixed_cost">Fixed Cost ($'000):</label>
-                        <input type="number" id="fixed_cost" name="fixed_cost" value="{{ fixed_cost or '1000' }}" step="10" min="0">
+                        <input type="number" id="fixed_cost" name="fixed_cost" value="{{ fixed_cost or '0' }}" step="10" min="0">
                     </div>
                     <div class="input-field">
                         <label for="energy_cost">Energy Cost ($/kWh):</label>
@@ -250,20 +262,54 @@
                         <input type="number" id="power_cost" name="power_cost" value="{{ power_cost or '150' }}" step="10" min="0">
                     </div>
                     <div class="input-field">
-                        <label for="om_cost">O&M Cost (% initial cost/year):</label>
+                        <label for="om_cost">O&M Cost (%/year):</label>
                         <input type="number" id="om_cost" name="om_cost" value="{{ om_cost or '5' }}" step="1" min="0" max="100">
                     </div>
 
-                    <div class="checkbox-title">Select Available Service</div>
+                    <div class="checkbox-title">Select BESS Service</div>
                     <div class="checkbox-field">
-                        {% for option in ["Arbitrage", "Frequency Regulation", "Primary Reserve", "Contingency Reserve", "Energy Savings (BTM)", "Demand Response (BTM)", "Interruptible Load (BTM)"] %}
+                        {% for option in all_services %}
                         <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="{{ option }}"
+                            <input type="radio" name="bess_service" value="{{ option }}" onclick="toggleConsumerInputs()" 
                             {% if option in selected_services %}checked{% endif %}>
                             {{ option }}
                         </label>
                         {% endfor %}
-     
+                    </div>
+
+                    <div class="checkbox-title">Select Basis for Electricity Tariff</div>
+                    <div class="checkbox-field">
+                        {% for option in all_price_options %}
+                        <label class="checkbox-label">
+                            <input type="radio" name="electricity_tariff" value="{{ option }}"
+                            {% if option in selected_price_options %}checked{% endif %}>
+                            {{ option }}
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div id="consumer-inputs" class="hidden">
+                        <div class="checkbox-title">Select Electricity Tariff Plan</div>
+                        <div class="checkbox-field">
+                            {% for option in all_tariffplan_options %}
+                            <label class="checkbox-label">
+                                <input type="radio" name="tariff_plan" value="{{ option }}"
+                                {% if option in selected_tariffplan_options %}checked{% endif %}>
+                                {{ option }}
+                            </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="checkbox-title">Select Basis for Load Profile</div>
+                        <div class="checkbox-field">
+                            {% for option in all_profile_options %}
+                            <label class="checkbox-label">
+                                <input type="radio" name="load_profile" value="{{ option }}"
+                                {% if option in selected_profile_options %}checked{% endif %}>
+                                {{ option }}
+                            </label>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
@@ -315,6 +361,21 @@
         function expandInputSection() {
             document.getElementById('input-fields').style.display = 'block';
         }
+
+        function toggleConsumerInputs() {
+            var bessService = document.querySelector('input[name="bess_service"]:checked').value;
+            var consumerInputs = document.getElementById('consumer-inputs');
+            if (bessService === "Consumer-side") {
+                consumerInputs.classList.remove("hidden");
+            } else {
+                consumerInputs.classList.add("hidden");
+            }
+        }
+
+        // Call this function on page load to ensure the correct fields are displayed if the form is pre-filled
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleConsumerInputs();
+        });
     </script>
 
 </body>

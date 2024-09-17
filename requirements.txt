@@ -1,6 +1,7 @@
 flask
 pandas
 numpy
+numpy_financial
 gunicorn
 pyomo
 openpyxl
