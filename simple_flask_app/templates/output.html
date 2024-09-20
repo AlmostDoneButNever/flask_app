@@ -249,21 +249,21 @@
                         <input type="number" id="energy_capacity_number" min="0" max="10" value="{{ energy_capacity or 4 }}" oninput="syncSlider('energy_capacity')">
                     </div>
                     <div class="checkbox-title">Cost Parameters</div>
-                    <div class="input-field">
+                    <div class="input-field hidden">
                         <label for="fixed_cost">Fixed Cost ($'000):</label>
                         <input type="number" id="fixed_cost" name="fixed_cost" value="{{ fixed_cost or '0' }}" step="10" min="0">
                     </div>
                     <div class="input-field">
-                        <label for="energy_cost">Energy Cost ($/kWh):</label>
-                        <input type="number" id="energy_cost" name="energy_cost" value="{{ energy_cost or '250' }}" step="10" min="0">
+                        <label for="energy_cost">Energy Components ($/kWh):</label>
+                        <input type="number" id="energy_cost" name="energy_cost" value="{{ energy_cost or '450' }}" step="10" min="0">
                     </div>
                     <div class="input-field">
-                        <label for="power_cost">Power Cost ($/kW):</label>
-                        <input type="number" id="power_cost" name="power_cost" value="{{ power_cost or '150' }}" step="10" min="0">
+                        <label for="power_cost">Power Components ($/kW):</label>
+                        <input type="number" id="power_cost" name="power_cost" value="{{ power_cost or '100' }}" step="10" min="0">
                     </div>
-                    <div class="input-field">
+                    <div class="input-field hidden">
                         <label for="om_cost">O&M Cost (%/year):</label>
-                        <input type="number" id="om_cost" name="om_cost" value="{{ om_cost or '5' }}" step="1" min="0" max="100">
+                        <input type="number" id="om_cost" name="om_cost" value="{{ om_cost or '0' }}" step="1" min="0" max="100">
                     </div>
 
                     <div class="checkbox-title">Select BESS Service</div>
@@ -299,7 +299,9 @@
                             </label>
                             {% endfor %}
                         </div>
-
+                    </div>
+                    
+                    <div class="hidden">
                         <div class="checkbox-title">Select Basis for Load Profile</div>
                         <div class="checkbox-field">
                             {% for option in all_profile_options %}

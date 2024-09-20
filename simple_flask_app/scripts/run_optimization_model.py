@@ -42,6 +42,8 @@ def run_model(packaged_data, result_html_name):
     all_revenue_dict['Interruptible Load'] = []
     all_revenue_dict['Demand-side Energy Savings'] = []
 
+    # num_slices = 3
+
     first_p = 0
     last_p = num_slices - 1
 
@@ -50,10 +52,10 @@ def run_model(packaged_data, result_html_name):
 
         # if p % 50 == 0:
         #     print('Watch: ', p)
-        # if p == last_p:
-        #     final_soc_target = 1
-        # else:
-        #     final_soc_target = 0
+        if p == last_p:
+            final_soc_target = 1
+        else:
+            final_soc_target = 0
 
         periodic_price = price_df[p*model_time_period:(p+1)*model_time_period]
         periodic_price = periodic_price.set_index('period')
@@ -67,7 +69,7 @@ def run_model(packaged_data, result_html_name):
             periodic_load = []
 
         # try:
-        model, revenue, schedule_dict, revenue_dict = optimize_revenue(initial_soc, packaged_data, periodic_price, periodic_load, final_soc_target=0, cap_settings = [])
+        model, revenue, schedule_dict, revenue_dict = optimize_revenue(initial_soc, packaged_data, periodic_price, periodic_load, final_soc_target, cap_settings = [])
         
         # Store the results
         total_revenue += model.obj()
@@ -115,11 +117,12 @@ def run_model(packaged_data, result_html_name):
         result_df = result_df.reset_index()
 
     price_df.index.names = ['time']
-    bess['revenue'] = total_revenue * basis['annual_time_period']/len(price_df)
+    # bess['revenue'] = total_revenue * basis['annual_time_period']/len(price_df)
+    bess['revenue'] = total_revenue * 365/num_slices
 
     financial_metrics = econs_calc(basis, bess, bess['revenue'])
 
     if result_html_name:
-        generate_html(result_html_name, bess, service, price_df, result_df, revenue_data, basis['wacc'], service['load'])
+        generate_html(result_html_name, bess, service, price_df[:num_slices*48], result_df, revenue_data, basis['wacc'], service['load'])
 
     return bess['revenue'], result_df, revenue_data, financial_metrics

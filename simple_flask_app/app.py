@@ -78,6 +78,8 @@ def index():
         bess['power_opex'] = float(om_cost)/100 * bess['power_capex']
 
         # Modify service based on selection
+        data['soc_limit']['min'] = 0.1
+        
         for key in all_services + other_services:
             option = all_services_dict[key]
             if option in service and key in selected_services:
