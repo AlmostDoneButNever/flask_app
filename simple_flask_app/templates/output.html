@@ -287,9 +287,9 @@
                         <label for="power_cost">Power Components ($/kW):</label>
                         <input type="number" id="power_cost" name="power_cost" value="{{ power_cost or '100' }}" step="10" min="0">
                     </div>
-                    <div class="input-field hidden">
+                    <div class="input-field">
                         <label for="om_cost">O&M Cost (%/year):</label>
-                        <input type="number" id="om_cost" name="om_cost" value="{{ om_cost or '0' }}" step="1" min="0" max="100">
+                        <input type="number" id="om_cost" name="om_cost" value="{{ om_cost or '0.5' }}" step="0.5" min="0" max="100">
                     </div>
 
                     <div class="checkbox-title">
