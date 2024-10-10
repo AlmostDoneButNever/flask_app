@@ -29,7 +29,7 @@ all_services_dict = {
                         "Interruptible Load (BTM)": 'il'
 }
 
-all_price_options = ['Nominal', "Nominal x 1.5", 'Nominal x 2']
+all_price_options = ['Nominal', "Nominal x 150%", 'Nominal x 200%']
 all_profile_options = ['Commercial', 'Residential']
 all_tariffplan_options = ['Time of use', 'Fixed']
 
@@ -68,8 +68,8 @@ def index():
 
         # print(data['load'])
 
-        bess['cap_energy'] = float(energy_capacity)
-        bess['cap_power'] = float(power_capacity)
+        bess['cap_power'] = float(power_capacity)/1000
+        bess['cap_energy'] = float(energy_capacity) * bess['cap_power']
         bess['fixed_capex'] = float(fixed_cost)
         bess['energy_capex'] = float(energy_cost)
         bess['power_capex'] = float(power_cost)
@@ -98,11 +98,11 @@ def index():
                 data['prices']['ec_energy_price'] = 325.7
 
         for option in selected_price_options:
-            if option == "Nominal x 1.5":
+            if option == "Nominal x 150%":
                 data['prices']['arb_energy_price'] *= 1.5
                 data['prices']['ec_energy_price'] *= 1.5
 
-            elif option == "Nominal x 2":
+            elif option == "Nominal x 200%":
                 data['prices']['arb_energy_price'] *= 2
                 data['prices']['ec_energy_price'] *= 2
 
